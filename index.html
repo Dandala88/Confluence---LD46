@@ -33,6 +33,7 @@ var config = {
 var player;
 var player_projectiles;
 var health_bar;
+var cpu_health_bar
 var cpu;
 var enemies;
 var particulates;
@@ -254,11 +255,18 @@ function update_player() {
 /////////////////////////////////////////CPU///////////////////////////////////////////
 function load_cpu(game) {
     game.load.spritesheet('cpu', 'assets/CPULD46.png', { frameWidth: 224, frameHeight: 224 });
+    game.load.image('cpu-health', 'assets/CPULD46_Health');
 }
 
 function create_cpu(game) {
     cpu = game.physics.add.staticGroup();
     cpu.create(300, 300, 'cpu');
+    cpu.health = 10000;
+    cpu.health_display = game.add.image(0, 30, 'cpu-health');
+    cpu.health_display.setOrigin(0, 0);
+    cpu_health_bar = game.add.rectangle(5, 34, ((cpu.health_display.width - 10) / 10000) * cpu.health, cpu.health_display.height-5);
+    graphics.fillStyle(0x262949);
+    graphics.fillRectShape(cpu_health_bar);
 }
 
 function update_cpu(game) {
@@ -284,19 +292,34 @@ function create_enemies(game) {
 
     particulates = game.physics.add.group();
 
-    game.physics.add.overlap(cpu, particulates, function(cpu, particulates) {
+    game.physics.add.overlap(cpu, particulates, function(hit, particulates) {
         particulates.disableBody(true, true);
-    }, null, this);
-
-    game.physics.add.overlap(player, particulates, function(cpu, particulates) {
-        particulates.disableBody(true, true);
-        player.health = player.health - 10;
-        console.log(player.health);
+        cpu.health = cpu.health - 10;
+        console.log(cpu.health)
         graphics.clear();
         health_bar = game.add.rectangle(5, 4, ((player.health_display.width - 10) / 100) * player.health, player.health_display.height-5);
         graphics.fillStyle(0xee6b3b);
         graphics.fillRectShape(health_bar);
+
+        cpu_health_bar = game.add.rectangle(5, 34, ((cpu.health_display.width - 10) / 10000) * cpu.health, cpu.health_display.height-5);
+        graphics.fillStyle(0x262949);
+        graphics.fillRectShape(cpu_health_bar);
     }, null, this);
+
+    game.physics.add.overlap(player, particulates, function(hit, particulates) {
+        particulates.disableBody(true, true);
+        player.health = player.health - 10;
+        
+        graphics.clear();
+        health_bar = game.add.rectangle(5, 4, ((player.health_display.width - 10) / 100) * player.health, player.health_display.height-5);
+        graphics.fillStyle(0xee6b3b);
+        graphics.fillRectShape(health_bar);
+
+        cpu_health_bar = game.add.rectangle(5, 34, ((cpu.health_display.width - 10) / 10000) * cpu.health, cpu.health_display.height-5);
+        graphics.fillStyle(0x262949);
+        graphics.fillRectShape(cpu_health_bar);
+    }, null, this);
+
 }
 
 function update_enemies(game) {
