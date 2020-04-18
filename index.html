@@ -296,9 +296,9 @@ function update_enemies(game) {
     }
 
     if(enemy.y > 300) {
-        evy = ev;
-    } else {
         evy = -ev;
+    } else {
+        evy = ev;
     }
 
     enemy.setVelocityX(evx);
