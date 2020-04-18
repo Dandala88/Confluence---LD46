@@ -31,6 +31,7 @@ var config = {
 };
 
 var player;
+var cpu  ;
 var cursors;
 var firing = false;
 var lock_position = false;
@@ -39,19 +40,27 @@ var lock_key = false;
 var game = new Phaser.Game(config);
 
 function preload() {
-   load_player(this);
+    load_cpu(this);
+    load_enemies(this);
+    load_player(this);
 }
 
 function create() {
     cursors = this.input.keyboard.createCursorKeys();
 
+    create_cpu(this);
+    create_enemies(this);
     create_player(this);
 }
 
 function update() {
+    update_cpu(this);
+    update_enemies(this);
     update_player(this);
 }
 
+
+//////////////////////////////////////////PLAYER///////////////////////////////////////
 function load_player(game) {
     game.load.spritesheet('psu', 'assets/power_supply_unit_ld46.png', { frameWidth: 32, frameHeight: 32 });
     game.load.spritesheet('low', 'assets/low_volt.png', { frameWidth: 16, frameHeight: 16 });
@@ -62,7 +71,7 @@ function create_player(game) {
     player.setCollideWorldBounds(true);
     player.speed = 200;
     player.firingSpeed = 500;
-
+    game.physics.add.collider(player, cpu);
     player_projectiles = game.physics.add.group();
 
     game.anims.create({
@@ -115,6 +124,7 @@ function create_player(game) {
 }
 
 function update_player() {
+
     if(lock_key.isDown) {
         lock_position = true;
     } else {
@@ -221,6 +231,33 @@ function update_player() {
     }
 }
 
+
+
+/////////////////////////////////////////CPU///////////////////////////////////////////
+function load_cpu(game) {
+    game.load.spritesheet('cpu', 'assets/CPULD46.png', { frameWidth: 224, frameHeight: 224 });
+}
+
+function create_cpu(game) {
+    cpu = game.physics.add.staticGroup();
+    cpu.create(300, 300, 'cpu');
+}
+
+function update_cpu(game) {
+}
+
+
+/////////////////////////////////////////ENEMIES///////////////////////////////////////////
+function load_enemies(game) {
+    game.load.spritesheet('aq', 'assets/Aq.png', { frameWidth: 32, frameHeight: 32 });
+    game.load.spritesheet('particulate', 'assets/particulate.png', { frameWidth: 16, frameHeight: 16 });
+}
+
+function create_enemies(game) {
+}
+
+function update_enemies(game) {
+}
 </script>
 </body>
 </html>
