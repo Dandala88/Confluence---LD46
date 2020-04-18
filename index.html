@@ -32,6 +32,7 @@ var config = {
 
 var player;
 var player_projectiles;
+var health_bar;
 var cpu;
 var enemies;
 var particulates;
@@ -39,10 +40,12 @@ var cursors;
 var firing = false;
 var lock_position = false;
 var lock_key = false;
+var graphics;
 
 var game = new Phaser.Game(config);
 
 function preload() {
+    graphics = this.add.graphics();
     load_cpu(this);
     load_player(this);
     load_enemies(this);
@@ -69,14 +72,21 @@ function update() {
 function load_player(game) {
     game.load.spritesheet('psu', 'assets/power_supply_unit_ld46.png', { frameWidth: 32, frameHeight: 32 });
     game.load.spritesheet('low', 'assets/low_volt.png', { frameWidth: 16, frameHeight: 16 });
+    game.load.image('psu-health', 'assets/psu_health.png');
 }
 
 function create_player(game) {
     player = game.physics.add.sprite(100, 450, 'psu');
+    player.health_display = game.add.image(0, 0, 'psu-health');
+    player.health_display.setOrigin(0, 0);
     player.setCollideWorldBounds(true);
     player_projectiles = game.physics.add.group();
     player.speed = 200;
     player.firingSpeed = 500;
+    player.health = 90;
+    health_bar = game.add.rectangle(5, 4, ((player.health_display.width - 10) / 100) * player.health, player.health_display.height-5);
+    graphics.fillStyle(0xee6b3b);
+    graphics.fillRectShape(health_bar);
     game.physics.add.collider(player, cpu);
     game.physics.add.overlap(cpu, player_projectiles, function(cpu, projectile) {
         projectile.disableBody(true, true);
@@ -132,7 +142,7 @@ function create_player(game) {
 }
 
 function update_player() {
-
+    
     if(lock_key.isDown) {
         lock_position = true;
     } else {
@@ -276,6 +286,16 @@ function create_enemies(game) {
 
     game.physics.add.overlap(cpu, particulates, function(cpu, particulates) {
         particulates.disableBody(true, true);
+    }, null, this);
+
+    game.physics.add.overlap(player, particulates, function(cpu, particulates) {
+        particulates.disableBody(true, true);
+        player.health = player.health - 10;
+        console.log(player.health);
+        graphics.clear();
+        health_bar = game.add.rectangle(5, 4, ((player.health_display.width - 10) / 100) * player.health, player.health_display.height-5);
+        graphics.fillStyle(0xee6b3b);
+        graphics.fillRectShape(health_bar);
     }, null, this);
 }
 
