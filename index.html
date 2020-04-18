@@ -272,6 +272,11 @@ function create_enemies(game) {
 
     game.physics.add.collider(enemies, cpu);
 
+    particulates = game.physics.add.group();
+
+    game.physics.add.overlap(cpu, particulates, function(cpu, particulates) {
+        particulates.disableBody(true, true);
+    }, null, this);
 }
 
 function update_enemies(game) {
@@ -298,6 +303,11 @@ function update_enemies(game) {
 
     enemy.setVelocityX(evx);
     enemy.setVelocityY(evy);
+
+    var p = particulates.create(enemy.x, enemy.y, 'particulate');
+    p.setVelocityX(evx*2);
+    p.setVelocityY(evy*2);
+
 }
 </script>
 </body>
