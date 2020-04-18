@@ -58,6 +58,8 @@ function create() {
     create_cpu(this);
     create_player(this);
     create_enemies(this);
+    this.cameras.main.setBounds(-10, -10, 8000, 8000);
+    this.cameras.main.startFollow(player);
 }
 
 function update() {
@@ -80,7 +82,7 @@ function create_player(game) {
     player = game.physics.add.sprite(100, 450, 'psu');
     player.health_display = game.add.image(0, 0, 'psu-health');
     player.health_display.setOrigin(0, 0);
-    player.setCollideWorldBounds(true);
+    //player.setCollideWorldBounds(true);
     player_projectiles = game.physics.add.group();
     player.speed = 200;
     player.firingSpeed = 500;
