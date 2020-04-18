@@ -39,71 +39,82 @@ var lock_key = false;
 var game = new Phaser.Game(config);
 
 function preload() {
-    this.load.spritesheet('psu', 'assets/power_supply_unit_ld46.png', { frameWidth: 32, frameHeight: 32 });
-    this.load.spritesheet('low', 'assets/low_volt.png', { frameWidth: 16, frameHeight: 16 });
+   load_player(this);
 }
 
 function create() {
     cursors = this.input.keyboard.createCursorKeys();
 
-    player = this.physics.add.sprite(100, 450, 'psu');
+    create_player(this);
+}
+
+function update() {
+    update_player(this);
+}
+
+function load_player(game) {
+    game.load.spritesheet('psu', 'assets/power_supply_unit_ld46.png', { frameWidth: 32, frameHeight: 32 });
+    game.load.spritesheet('low', 'assets/low_volt.png', { frameWidth: 16, frameHeight: 16 });
+}
+
+function create_player(game) {
+    player = game.physics.add.sprite(100, 450, 'psu');
     player.setCollideWorldBounds(true);
     player.speed = 200;
     player.firingSpeed = 500;
 
-    player_projectiles = this.physics.add.group();
+    player_projectiles = game.physics.add.group();
 
-    this.anims.create({
+    game.anims.create({
        key:'left',
        frames: [{key: 'psu', frame: 3}],
        repeat: -1
     });
 
-    this.anims.create({
+    game.anims.create({
        key:'right',
        frames: [{key: 'psu', frame: 2}],
        repeat: -1
     });
 
-    this.anims.create({
+    game.anims.create({
        key:'up',
        frames: [{key: 'psu', frame: 0}],
        repeat: -1
     });
 
-    this.anims.create({
+    game.anims.create({
        key:'down',
        frames: [{key: 'psu', frame: 1}],
        repeat: -1
     });
 
-    this.anims.create({
+    game.anims.create({
        key:'up-left',
        frames: [{key: 'psu', frame: 3}],
        repeat: -1
     });
 
-    this.anims.create({
+    game.anims.create({
        key:'up-right',
        frames: [{key: 'psu', frame: 2}],
        repeat: -1
     });
 
-    this.anims.create({
+    game.anims.create({
        key:'down-left',
        frames: [{key: 'psu', frame: 3}],
        repeat: -1
     });
 
-    this.anims.create({
+    game.anims.create({
        key:'down-right',
        frames: [{key: 'psu', frame: 2}],
        repeat: -1
     });
 }
 
-function update() {
-    
+function update_player() {
     if(lock_key.isDown) {
         lock_position = true;
     } else {
