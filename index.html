@@ -31,7 +31,10 @@ var config = {
 };
 
 var player;
-var cpu  ;
+var player_projectiles;
+var cpu;
+var enemies;
+var particulates;
 var cursors;
 var firing = false;
 var lock_position = false;
@@ -41,22 +44,24 @@ var game = new Phaser.Game(config);
 
 function preload() {
     load_cpu(this);
-    load_enemies(this);
     load_player(this);
+    load_enemies(this);
 }
 
 function create() {
     cursors = this.input.keyboard.createCursorKeys();
 
     create_cpu(this);
-    create_enemies(this);
     create_player(this);
+    create_enemies(this);
 }
 
 function update() {
     update_cpu(this);
-    update_enemies(this);
     update_player(this);
+    if(Phaser.Math.Between(0, 100) % 99 == 0) {
+        update_enemies(this);
+    }
 }
 
 
@@ -69,10 +74,13 @@ function load_player(game) {
 function create_player(game) {
     player = game.physics.add.sprite(100, 450, 'psu');
     player.setCollideWorldBounds(true);
+    player_projectiles = game.physics.add.group();
     player.speed = 200;
     player.firingSpeed = 500;
     game.physics.add.collider(player, cpu);
-    player_projectiles = game.physics.add.group();
+    game.physics.add.overlap(cpu, player_projectiles, function(cpu, projectile) {
+        projectile.disableBody(true, true);
+    }, null, this);
 
     game.anims.create({
        key:'left',
@@ -254,9 +262,42 @@ function load_enemies(game) {
 }
 
 function create_enemies(game) {
+
+    enemies = game.physics.add.group();
+
+    game.physics.add.overlap(enemies, player_projectiles, function(enemy, projectile) {
+        enemy.disableBody(true, true);
+        projectile.disableBody(true, true);
+    }, null, game);
+
+    game.physics.add.collider(enemies, cpu);
+
 }
 
 function update_enemies(game) {
+    var ev = 10;//enemy velocity
+    //spawn enemy within a 300 range of the player
+    var ex = Phaser.Math.Between(player.x - 300, player.x + 300);
+    var ey = Phaser.Math.Between(player.y - 300, player.y + 300);
+    var evx = ev;//calculated x velocity
+    var evy = ev;//calculated y velocity
+
+    var enemy = enemies.create(ex, ey, 'aq');
+
+    if(enemy.x > 300) {
+        evx = -ev;
+    } else {
+        evx = ev;
+    }
+
+    if(enemy.y > 300) {
+        evy = ev;
+    } else {
+        evy = -ev;
+    }
+
+    enemy.setVelocityX(evx);
+    enemy.setVelocityY(evy);
 }
 </script>
 </body>
