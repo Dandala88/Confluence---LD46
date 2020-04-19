@@ -46,6 +46,8 @@ var firing = false;
 var lock_position = false;
 var lock_key = false;
 var graphics;
+var invincible;
+var enemy_slows = true;
 
 var game = new Phaser.Game(config);
 
@@ -121,6 +123,7 @@ function create_player(game) {
     game.physics.add.overlap(cpu, player_projectiles, function(cpu, projectile) {
         projectile.disableBody(true, true);
     }, null, this);
+    
 
     game.anims.create({
        key:'left',
@@ -313,7 +316,6 @@ function load_enemies(game) {
 function create_enemies(game) {
 
     enemies = game.physics.add.group();
-
     game.physics.add.overlap(enemies, player_projectiles, function(enemy, projectile) {
         enemy.disableBody(true, true);
         projectile.disableBody(true, true);
@@ -326,30 +328,28 @@ function create_enemies(game) {
     game.physics.add.overlap(cpu, particulates, function(hit, particulates) {
         particulates.disableBody(true, true);
         cpu.health = cpu.health - 10;
-        graphics.clear();
-        health_bar = game.add.rectangle(5, 4, ((player.health_display.width - 10) / 100) * player.health, player.health_display.height-5);
-        graphics.setScrollFactor(0, 0);
-        graphics.fillStyle(0xee6b3b);
-        graphics.fillRectShape(health_bar);
-
-        cpu_health_bar = game.add.rectangle(5, 34, ((cpu.health_display.width - 10) / 10000) * cpu.health, cpu.health_display.height-5);
-        graphics.fillStyle(0x262949);
-        graphics.fillRectShape(cpu_health_bar);
+        refreshGraphics(game);
     }, null, this);
 
     game.physics.add.overlap(player, particulates, function(hit, particulates) {
         particulates.disableBody(true, true);
         player.health = player.health - 10;
-        
-        graphics.clear();
-        health_bar = game.add.rectangle(5, 4, ((player.health_display.width - 10) / 100) * player.health, player.health_display.height-5);
-        graphics.setScrollFactor(0, 0);
-        graphics.fillStyle(0xee6b3b);
-        graphics.fillRectShape(health_bar);
+        refreshGraphics(game);
+    }, null, this);
 
-        cpu_health_bar = game.add.rectangle(5, 34, ((cpu.health_display.width - 10) / 10000) * cpu.health, cpu.health_display.height-5);
-        graphics.fillStyle(0x262949);
-        graphics.fillRectShape(cpu_health_bar);
+    game.physics.add.collider(player, enemies, function(p, e) {
+        
+        var timerForStop = game.time.delayedCall(500, function() {
+            setEnemyPath(e, 10);
+        });
+        if(!invincible) {
+            player.health = player.health - 10;
+            invincible = true
+        }
+        var time = game.time.delayedCall(5000, function() {
+            invincible = false;
+        });
+        refreshGraphics(game);
     }, null, this);
 
 }
@@ -362,14 +362,39 @@ function update_enemies(game) {
 
     if(ex > cpu.x-125 && ex < cpu.x+125
     && ey > cpu.y-125 && ey < cpu.y+125) {
-        console.log("spawn location in bounds")
+        console.log("spawn location in bounds");
     } else {
         var evx = ev;//calculated x velocity
         var evy = ev;//calculated y velocity
 
         var enemy = enemies.create(ex, ey, 'aq');
+        setEnemyPath(enemy, ev);
 
-        if(enemy.x > 300) {
+        var p = particulates.create(enemy.x, enemy.y, 'particulate');
+        p.setVelocityX(evx*2);
+        p.setVelocityY(evy*2);
+    }
+
+    var timeFire = game.time.delayedCall(5000, function() {
+            enemyContinuousFire(enemy, p)
+    });
+
+}
+
+function refreshGraphics(game) {
+    graphics.clear();
+        health_bar = game.add.rectangle(5, 4, ((player.health_display.width - 10) / 100) * player.health, player.health_display.height-5);
+        graphics.setScrollFactor(0, 0);
+        graphics.fillStyle(0xee6b3b);
+        graphics.fillRectShape(health_bar);
+
+        cpu_health_bar = game.add.rectangle(5, 34, ((cpu.health_display.width - 10) / 10000) * cpu.health, cpu.health_display.height-5);
+        graphics.fillStyle(0x262949);
+        graphics.fillRectShape(cpu_health_bar);
+}
+
+function setEnemyPath(enemy, ev) {
+    if(enemy.x > 300) {
             evx = -ev;
         } else {
             evx = ev;
@@ -383,13 +408,18 @@ function update_enemies(game) {
 
         enemy.setVelocityX(evx);
         enemy.setVelocityY(evy);
-
-        var p = particulates.create(enemy.x, enemy.y, 'particulate');
-        p.setVelocityX(evx*2);
-        p.setVelocityY(evy*2);
-    }
-
 }
+
+function enemyContinuousFire(enemy, particulate) {
+    if(enemy) {
+        var p = particulates.create(enemy.x, enemy.y, 'particulate');
+        p.setVelocityX(enemy.body.velocity.x*2);
+        p.setVelocityY(enemy.body.velocity.y*2);
+    }
+}
+
+
+
 </script>
 </body>
 </html>
