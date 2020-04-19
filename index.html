@@ -118,27 +118,46 @@ function update() {
 
     if(player.health <= 0 || (cpu.health <= 0 && player.ribbonPossesion < 4)) {
         game_over_text.setText('GAME OVER');
+        cpu.anims.play('explode', function() {
+        });
         enemies.children.iterate(function(child) {
             child.disableBody(true, true);
         });
         particulates.children.iterate(function(child) {
             child.disableBody(true, true);
         });
+        cpu_projectiles.children.iterate(function(child) {
+            child.disableBody(true, true);
+        });
         player.disableBody(true, true);
-        return;
+        var etimer = this.time.delayedCall(1000, function() {
+            cpu.disableBody(true, true);
+            return;
+        });
     }
 
     if(cpu.health <= 0 && player.ribbonPossesion >= 4) {
         game_over_text.setColor('green');
         game_over_text.setText('GAME WIN');
+        cpu.anims.play('explode', function() {
+        });
+
         enemies.children.iterate(function(child) {
             child.disableBody(true, true);
         });
         particulates.children.iterate(function(child) {
             child.disableBody(true, true);
         });
-        player.disableBody(true, true);
-        return;
+        cpu_projectiles.children.iterate(function(child) {
+            child.disableBody(true, true);
+        });
+            
+        var etimer = this.time.delayedCall(1000, function() {
+            cpu.disableBody(true, true);
+            return;
+        });
+
+        
     }
 
     if(player.ribbonPossesion >= 4) {
@@ -174,7 +193,7 @@ function create_player(game) {
     player.speed = 200;
     player.firingSpeed = 500;
     player.health = 100;
-    player.ribbonPossesion = 0;
+    player.ribbonPossesion = 4;
     health_bar = game.add.rectangle(5, 4, ((player.health_display.width - 10) / 100) * player.health, player.health_display.height-5);
     graphics.setScrollFactor(0, 0);
     graphics.fillStyle(0xee6b3b);
@@ -182,22 +201,22 @@ function create_player(game) {
     if(player.ribbonPossesion < 4) game.physics.add.collider(player, cpu);
 
     //for debuggin boss battle
-    // game.physics.add.overlap(cpu, player_projectiles, function(c, p) {
-    //     if(player.ribbonPossesion >= 4) {
-    //         c.health-=1000;
-    //         refreshGraphics(game);
-    //     }
-    //     p.disableBody(true, true);
-    // }, null, this);
+    game.physics.add.overlap(cpu, player_projectiles, function(c, p) {
+        if(player.ribbonPossesion >= 4) {
+            c.health-=1000;
+            refreshGraphics(game);
+        }
+        p.disableBody(true, true);
+    }, null, this);
 
-    // if(player.ribbonPossesion >= 4) {
-    //     cpu_fires(game);
-    //     game.physics.add.overlap(player, cpu_projectiles, function(p, cp) {
-    //         player.health-=10;
-    //         refreshGraphics(game);
-    //         cp.disableBody(true, true);
-    //     }, null, this);
-    // }
+    if(player.ribbonPossesion >= 4) {
+        cpu_fires(game);
+        game.physics.add.overlap(player, cpu_projectiles, function(p, cp) {
+            player.health-=10;
+            refreshGraphics(game);
+            cp.disableBody(true, true);
+        }, null, this);
+    }
     
     game.anims.create({
        key:'left',
@@ -442,6 +461,21 @@ function create_cpu(game) {
     cpu_health_bar = game.add.rectangle(5, 34, ((cpu.health_display.width - 10) / 10000) * cpu.health, cpu.health_display.height-5);
     graphics.fillStyle(0x262949);
     graphics.fillRectShape(cpu_health_bar);
+    game.anims.create({
+        key: 'explode',
+        frames: [
+            {key: 'cpu', frame: 1},
+            {key: 'cpu', frame: 2},
+            {key: 'cpu', frame: 3},
+            {key: 'cpu', frame: 4},
+            {key: 'cpu', frame: 5},
+            {key: 'cpu', frame: 6},
+            {key: 'cpu', frame: 7},
+            {key: 'cpu', frame: 8}
+        ],
+        frameRate: 8,
+        repeat: -1
+    });
 
 }
 var bytedeltaX = 1;
