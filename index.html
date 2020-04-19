@@ -59,6 +59,11 @@ var ribbonText;
 var ending_initiated = false;
 var bossMusic;
 var music;
+var fire_sound;
+var iframe_sound;
+var bounce_sound;
+var explosion_sound;
+var explosion_has_played = false;
 
 var game = new Phaser.Game(config);
 
@@ -73,6 +78,8 @@ function preload() {
     loadRibbon(this);
     this.load.audio('gates', 'assets/sounds/Gates.wav');
     this.load.audio('motherboard', 'assets/sounds/Mother Board.wav');
+    this.load.audio('explosion', 'assets/sounds/explosion.wav');
+    this.load.audio('bounce', 'assets/sounds/bounce.wav');
     graphics = this.add.graphics();
 }
 
@@ -102,6 +109,8 @@ function create() {
     bossMusic = this.sound.add('motherboard', {
         loop: true
     });
+    explosion_sound = this.sound.add('explosion', {});
+    bounce_sound = this.sound.add('bounce', {});
     music.play();
 
     var canvascenterX = this.sys.game.canvas.width * 0.5 - 180;
@@ -132,6 +141,10 @@ function update() {
         game_over_text.setText('GAME OVER');
         cpu.anims.play('explode', function() {
         });
+        if(!explosion_has_played) {
+            explosion_sound.play();
+            explosion_has_played = true;
+        }
         enemies.children.iterate(function(child) {
             child.disableBody(true, true);
         });
@@ -153,7 +166,10 @@ function update() {
         game_over_text.setText('GAME WIN');
         cpu.anims.play('explode', function() {
         });
-
+        if(!explosion_has_played) {
+            explosion_sound.play();
+            explosion_has_played = true;
+        }
         enemies.children.iterate(function(child) {
             child.disableBody(true, true);
         });
@@ -195,6 +211,7 @@ function load_player(game) {
     game.load.spritesheet('psu', 'assets/power_supply_unit_ld46.png', { frameWidth: 32, frameHeight: 32 });
     game.load.spritesheet('low', 'assets/low_volt.png', { frameWidth: 16, frameHeight: 16 });
     game.load.image('psu-health', 'assets/psu_health.png');
+    game.load.audio('fire', 'assets/sounds/laser.wav');
 }
 
 function create_player(game) {
@@ -202,12 +219,13 @@ function create_player(game) {
     player.health_display = game.add.image(0, 0, 'psu-health');
     player.health_display.setScrollFactor(0);
     player.health_display.setOrigin(0, 0);
+    fire_sound = game.sound.add('fire', {});
     //player.setCollideWorldBounds(true);
     player_projectiles = game.physics.add.group();
     player.speed = 200;
     player.firingSpeed = 500;
     player.health = 100;
-    player.ribbonPossesion = 3;
+    player.ribbonPossesion = 4;
     health_bar = game.add.rectangle(5, 4, ((player.health_display.width - 10) / 100) * player.health, player.health_display.height-5);
     graphics.setScrollFactor(0, 0);
     graphics.fillStyle(0xee6b3b);
@@ -215,22 +233,22 @@ function create_player(game) {
     if(player.ribbonPossesion < 4) game.physics.add.collider(player, cpu);
 
     //for debuggin boss battle
-    // game.physics.add.overlap(cpu, player_projectiles, function(c, p) {
-    //     if(player.ribbonPossesion >= 4) {
-    //         c.health-=1000;
-    //         refreshGraphics(game);
-    //     }
-    //     p.disableBody(true, true);
-    // }, null, this);
+    game.physics.add.overlap(cpu, player_projectiles, function(c, p) {
+        if(player.ribbonPossesion >= 4) {
+            c.health-=1000;
+            refreshGraphics(game);
+        }
+        p.disableBody(true, true);
+    }, null, this);
 
-    // if(player.ribbonPossesion >= 4) {
-    //     cpu_fires(game);
-    //     game.physics.add.overlap(player, cpu_projectiles, function(p, cp) {
-    //         player.health-=10;
-    //         refreshGraphics(game);
-    //         cp.disableBody(true, true);
-    //     }, null, this);
-    // }
+    if(player.ribbonPossesion >= 4) {
+        cpu_fires(game);
+        game.physics.add.overlap(player, cpu_projectiles, function(p, cp) {
+            player.health-=10;
+            refreshGraphics(game);
+            cp.disableBody(true, true);
+        }, null, this);
+    }
     
     game.anims.create({
        key:'left',
@@ -412,13 +430,13 @@ function update_player() {
             }
         }
 
-    if(cursors.space.isDown) {
+    if(cursors.space.isDown && !invincible) {
         if(!firing) {
             firing = true;
             var projectile = player_projectiles.create(player.x, player.y, 'low');
             var curr_dir = player.anims.currentAnim.key;
             var v = player.firingSpeed;
-
+            fire_sound.play();
             switch(curr_dir) {
                 case 'up':
                     projectile.setVelocityY(-v);
@@ -514,13 +532,21 @@ function cpu_fires(game) {
         loop: true
     });
     game.physics.add.overlap(player, cpu_projectiles, function(p, cp) {
-            player.health-=10;
+            if(!invincible) {
+                iframe_sound.play();
+                player.health = player.health - 10;
+                invincible = true
+            }
+            var time = game.time.delayedCall(5000, function() {
+                invincible = false;
+            });
             refreshGraphics(game);
             cp.disableBody(true, true);
     }, null, this);
 
     game.physics.add.collider(player, cpu, function(p, c) {
         player.health-=20;
+        bounce_sound.play();
         refreshGraphics(game);
         player_bounced = true;
         var timer = game.time.delayedCall(200, function() {
@@ -546,12 +572,19 @@ function update_cpu(game) {
 function load_enemies(game) {
     game.load.spritesheet('aq', 'assets/Aq.png', { frameWidth: 32, frameHeight: 32 });
     game.load.spritesheet('particulate', 'assets/particulate.png', { frameWidth: 16, frameHeight: 16 });
+    game.load.audio('iframes', 'assets/sounds/invincible.wav');
+    game.load.audio('explode_e', 'assets/sounds/explode.wav');
 }
 
+var explode_sound;
 function create_enemies(game) {
 
     enemies = game.physics.add.group();
+    explode_sound = game.sound.add('explode_e', {
+        loop: false
+    })
     game.physics.add.overlap(enemies, player_projectiles, function(enemy, projectile) {
+        explode_sound.play();
         enemy.disableBody(true, true);
         projectile.disableBody(true, true);
     }, null, game);
@@ -559,6 +592,8 @@ function create_enemies(game) {
     game.physics.add.collider(enemies, cpu);
 
     particulates = game.physics.add.group();
+
+    iframe_sound = game.sound.add('iframes', {});
 
     game.physics.add.overlap(cpu, particulates, function(hit, part) {
         enemyFire(part.parent);
@@ -572,6 +607,7 @@ function create_enemies(game) {
         part.disableBody(true, true);
 
         if(!invincible) {
+            iframe_sound.play();
             player.health = player.health - 10;
             invincible = true
         }
@@ -588,6 +624,7 @@ function create_enemies(game) {
             setEnemyPath(e, 10);
         });
         if(!invincible) {
+            iframe_sound.play();
             player.health = player.health - 15;
             invincible = true
         }
@@ -729,6 +766,7 @@ function createWestConfluence(game) {
 
     game.physics.add.collider(player, walls_w, function(p , w) {
         player.health -= 5;
+        bounce_sound.play();
         refreshGraphics(game);
         player_bounced = true;
         var timer = game.time.delayedCall(200, function() {
@@ -792,6 +830,7 @@ function createNorthConfluence(game) {
 
     game.physics.add.collider(player, walls_n, function(p , w) {
         player.health -= 5;
+        bounce_sound.play();
         refreshGraphics(game);
         player_bounced = true;
         var timer = game.time.delayedCall(200, function() {
@@ -897,6 +936,7 @@ function createEastConfluence(game) {
 
     game.physics.add.collider(player, walls_e, function(p , w) {
         player.health -= 5;
+        bounce_sound.play();
         refreshGraphics(game);
         player_bounced = true;
         var timer = game.time.delayedCall(200, function() {
@@ -1010,6 +1050,7 @@ function createSouthConfluence(game) {
 
     game.physics.add.collider(player, walls_s, function(p , w) {
         player.health -= 5;
+        bounce_sound.play();
         refreshGraphics(game);
         player_bounced = true;
         var timer = game.time.delayedCall(200, function() {
