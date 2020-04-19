@@ -48,7 +48,10 @@ var lock_key = false;
 var graphics;
 var invincible;
 var enemy_slows = true;
-var walls;
+var walls_w;
+var walls_n;
+var walls_e;
+var walls_s;
 var debug_text
 var player_bounced
 
@@ -58,7 +61,7 @@ function preload() {
     load_cpu(this);
     load_player(this);
     load_enemies(this);
-    loadLeftConfluence(this)
+    loadWestConfluence(this)
     graphics = this.add.graphics();
 }
 
@@ -68,7 +71,7 @@ function create() {
     create_cpu(this);
     create_player(this);
     create_enemies(this);
-    createLeftConfluence(this);
+    createWestConfluence(this);
     this.cameras.main.startFollow(player);
     this.input.keyboard.on('keydown-F', function(e) {
         if(this.scale.isFullscreen) {
@@ -310,7 +313,7 @@ function load_cpu(game) {
 
 function create_cpu(game) {
     var cpus = game.physics.add.staticGroup();
-    cpu = cpus.create(300, 300, 'cpu');
+    cpu = cpus.create(300, 256, 'cpu');
     cpu.health = 10000;
     cpu.health_display = game.add.image(0, 30, 'cpu-health');
     cpu.health_display.setScrollFactor(0);
@@ -448,29 +451,68 @@ function enemyContinuousFire(enemy, particulate) {
     }
 }
 
-function loadLeftConfluence(game) {
+function loadWestConfluence(game) {
     game.load.image('wall_01', 'assets/wall_01.png');
     game.load.image('wall_02', 'assets/wall_02.png');
 }
 
-function createLeftConfluence(game) {
-    walls = game.physics.add.staticGroup();
+function createWestConfluence(game) {
+    walls_w = game.physics.add.staticGroup();
 
-    walls.create(tile(-5), tile(3), 'wall_01');
-    walls.create(tile(-10), tile(3), 'wall_01');
-    walls.create(tile(-15), tile(3), 'wall_01');
-    walls.create(tile(-20), tile(3), 'wall_01');
+    walls_w.create(tile(-5), tile(3), 'wall_01');
+    walls_w.create(tile(-10), tile(3), 'wall_01');
+    walls_w.create(tile(-15), tile(3), 'wall_01');
+    walls_w.create(tile(-20), tile(3), 'wall_01');
+    walls_w.create(tile(-25), tile(3), 'wall_01');
+    walls_w.create(tile(-30), tile(3), 'wall_01');
+    walls_w.create(tile(-33), tile(5), 'wall_02');
+    walls_w.create(tile(-35), tile(8), 'wall_01');
+    walls_w.create(tile(-40), tile(8), 'wall_01');
+    walls_w.create(tile(-45), tile(8), 'wall_01');
+    walls_w.create(tile(-50), tile(8), 'wall_01');
+    walls_w.create(tile(-55), tile(8), 'wall_01');
+    walls_w.create(tile(-60), tile(8), 'wall_01');
+    walls_w.create(tile(-65), tile(8), 'wall_01');
+    walls_w.create(tile(-70), tile(8), 'wall_01');
+    walls_w.create(tile(-73), tile(6), 'wall_02');
+    walls_w.create(tile(-75), tile(4), 'wall_01');
+    walls_w.create(tile(-80), tile(4), 'wall_01');
+    walls_w.create(tile(-83), tile(6), 'wall_02');
 
-    walls.create(tile(-5), tile(13), 'wall_01');
-    walls.create(tile(-10), tile(13), 'wall_01');
-    walls.create(tile(-15), tile(13), 'wall_01');
-    walls.create(tile(-20), tile(13), 'wall_01');
+    walls_w.create(tile(-5), tile(13), 'wall_01');
+    walls_w.create(tile(-10), tile(13), 'wall_01');
+    walls_w.create(tile(-15), tile(13), 'wall_01');
+    walls_w.create(tile(-20), tile(13), 'wall_01');
+    walls_w.create(tile(-23), tile(11), 'wall_02');
+    walls_w.create(tile(-25), tile(8), 'wall_01');
+    walls_w.create(tile(-28), tile(8), 'wall_02');
+    walls_w.create(tile(-30), tile(11), 'wall_01');
+    walls_w.create(tile(-35), tile(11), 'wall_01');
+    walls_w.create(tile(-40), tile(11), 'wall_01');
+    walls_w.create(tile(-45), tile(11), 'wall_01');
+    walls_w.create(tile(-50), tile(11), 'wall_01');
+    walls_w.create(tile(-55), tile(11), 'wall_01');
+    walls_w.create(tile(-60), tile(11), 'wall_01');
+    walls_w.create(tile(-65), tile(11), 'wall_01');
+    walls_w.create(tile(-70), tile(11), 'wall_01');
+    walls_w.create(tile(-73), tile(13), 'wall_02');
+    walls_w.create(tile(-75), tile(15), 'wall_01');
+    walls_w.create(tile(-80), tile(15), 'wall_01');
+    walls_w.create(tile(-83), tile(13), 'wall_02');
+    walls_w.create(tile(-84), tile(10), 'wall_02');
 
-    walls.create(tile(-15), tile(8), 'wall_02');
+    walls_w.create(tile(-2), tile(1), 'wall_02');
+    walls_w.create(tile(-2), tile(-2), 'wall_02');
+
+    walls_w.create(tile(-2), tile(15), 'wall_02');
+    walls_w.create(tile(-2), tile(20), 'wall_02');
+
+
+    walls_w.create(tile(-15), tile(8), 'wall_02');
 
 
 
-    game.physics.add.collider(player, walls, function(p , w) {
+    game.physics.add.collider(player, walls_w, function(p , w) {
         player.health -= 5;
         refreshGraphics(game);
         player_bounced = true;
@@ -480,6 +522,73 @@ function createLeftConfluence(game) {
     });
     player.setBounce(1);
     
+}
+
+function createNorthConfluence(game) {
+    walls_n = game.physics.add.staticGroup();
+
+    walls_n.create(tile(-5), tile(3), 'wall_01');
+    walls_n.create(tile(-10), tile(3), 'wall_01');
+    walls_n.create(tile(-15), tile(3), 'wall_01');
+    walls_n.create(tile(-20), tile(3), 'wall_01');
+    walls_n.create(tile(-25), tile(3), 'wall_01');
+    walls_n.create(tile(-30), tile(3), 'wall_01');
+    walls_n.create(tile(-33), tile(5), 'wall_02');
+    walls_n.create(tile(-35), tile(8), 'wall_01');
+    walls_n.create(tile(-40), tile(8), 'wall_01');
+    walls_n.create(tile(-45), tile(8), 'wall_01');
+    walls_n.create(tile(-50), tile(8), 'wall_01');
+    walls_n.create(tile(-55), tile(8), 'wall_01');
+    walls_n.create(tile(-60), tile(8), 'wall_01');
+    walls_n.create(tile(-65), tile(8), 'wall_01');
+    walls_n.create(tile(-70), tile(8), 'wall_01');
+    walls_n.create(tile(-73), tile(6), 'wall_02');
+    walls_n.create(tile(-75), tile(4), 'wall_01');
+    walls_n.create(tile(-80), tile(4), 'wall_01');
+    walls_n.create(tile(-83), tile(6), 'wall_02');
+
+    walls_n.create(tile(-5), tile(13), 'wall_01');
+    walls_n.create(tile(-10), tile(13), 'wall_01');
+    walls_n.create(tile(-15), tile(13), 'wall_01');
+    walls_n.create(tile(-20), tile(13), 'wall_01');
+    walls_n.create(tile(-23), tile(11), 'wall_02');
+    walls_n.create(tile(-25), tile(8), 'wall_01');
+    walls_n.create(tile(-28), tile(8), 'wall_02');
+    walls_n.create(tile(-30), tile(11), 'wall_01');
+    walls_n.create(tile(-35), tile(11), 'wall_01');
+    walls_n.create(tile(-40), tile(11), 'wall_01');
+    walls_n.create(tile(-45), tile(11), 'wall_01');
+    walls_n.create(tile(-50), tile(11), 'wall_01');
+    walls_n.create(tile(-55), tile(11), 'wall_01');
+    walls_n.create(tile(-60), tile(11), 'wall_01');
+    walls_n.create(tile(-65), tile(11), 'wall_01');
+    walls_n.create(tile(-70), tile(11), 'wall_01');
+    walls_n.create(tile(-73), tile(13), 'wall_02');
+    walls_n.create(tile(-75), tile(15), 'wall_01');
+    walls_n.create(tile(-80), tile(15), 'wall_01');
+    walls_n.create(tile(-83), tile(13), 'wall_02');
+    walls_n.create(tile(-84), tile(10), 'wall_02');
+
+    walls_n.create(tile(-2), tile(1), 'wall_02');
+    walls_n.create(tile(-2), tile(-2), 'wall_02');
+
+    walls_n.create(tile(-2), tile(15), 'wall_02');
+    walls_n.create(tile(-2), tile(20), 'wall_02');
+
+
+    walls_n.create(tile(-15), tile(8), 'wall_02');
+
+
+
+    game.physics.add.collider(player, walls_n, function(p , w) {
+        player.health -= 5;
+        refreshGraphics(game);
+        player_bounced = true;
+        var timer = game.time.delayedCall(200, function() {
+            player_bounced = false;
+        });
+    });
+    player.setBounce(1);
 }
 
 function tile(dist) {
