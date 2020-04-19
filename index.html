@@ -353,7 +353,14 @@ function create_enemies(game) {
         enemyFire(part.parent);
         part.disableBody(true, true);
 
-        player.health = player.health - 10;
+        if(!invincible) {
+            player.health = player.health - 10;
+            invincible = true
+        }
+        var time = game.time.delayedCall(5000, function() {
+            invincible = false;
+        });
+
         refreshGraphics(game);
     }, null, this);
 
@@ -363,7 +370,7 @@ function create_enemies(game) {
             setEnemyPath(e, 10);
         });
         if(!invincible) {
-            player.health = player.health - 10;
+            player.health = player.health - 15;
             invincible = true
         }
         var time = game.time.delayedCall(5000, function() {
@@ -395,13 +402,16 @@ function update_enemies(game) {
 }
 
 function enemyFire(enemy) {
-    var p = particulates.create(enemy.x, enemy.y, 'particulate');
-    p.parent = enemy;
-    p.setVelocityX(enemy.body.velocity.x*2);
-    p.setVelocityY(enemy.body.velocity.y*2);
+    if(enemy.body.velocity.x != 0 && enemy.body.velocity.y != 0) {
+        var p = particulates.create(enemy.x, enemy.y, 'particulate');
+        p.parent = enemy;
+        p.setVelocityX(enemy.body.velocity.x*2);
+        p.setVelocityY(enemy.body.velocity.y*2);
+    }
 }
 
 function refreshGraphics(game) {
+    console.log(player.health)
     graphics.clear();
         health_bar = game.add.rectangle(5, 4, ((player.health_display.width - 10) / 100) * player.health, player.health_display.height-5);
         graphics.setScrollFactor(0, 0);
