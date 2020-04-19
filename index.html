@@ -48,14 +48,18 @@ var lock_key = false;
 var graphics;
 var invincible;
 var enemy_slows = true;
+var walls;
+var debug_text
+var player_bounced
 
 var game = new Phaser.Game(config);
 
 function preload() {
-    graphics = this.add.graphics();
     load_cpu(this);
     load_player(this);
     load_enemies(this);
+    loadLeftConfluence(this)
+    graphics = this.add.graphics();
 }
 
 function create() {
@@ -64,6 +68,7 @@ function create() {
     create_cpu(this);
     create_player(this);
     create_enemies(this);
+    createLeftConfluence(this);
     this.cameras.main.startFollow(player);
     this.input.keyboard.on('keydown-F', function(e) {
         if(this.scale.isFullscreen) {
@@ -77,12 +82,19 @@ function create() {
     var canvascenterY = this.sys.game.canvas.height * 0.5 - 50;
     game_over_text = this.add.text(canvascenterX, canvascenterY, '', {fontSize: '64px', fill: 'red'});
     game_over_text.setScrollFactor(0);
+
+    debug_text = this.add.text(100, 100, '', {fontSize: '64px', fill: 'white'});
+    debug_text.setScrollFactor(0);
+
+    this.children.bringToTop(graphics);
+    this.children.bringToTop(player.health_display);
+    this.children.bringToTop(cpu.health_display);
 }
 
 function update() {
     update_cpu(this);
     update_player(this);
-    
+    debug_text.setText(Phaser.Math.FloorTo(player.x/32) + ',' + Phaser.Math.FloorTo(player.y/32))
     if(Phaser.Math.Between(0, 100) % 99 == 0) {
         update_enemies(this);
     }
@@ -183,61 +195,63 @@ function update_player() {
         lock_position = false;
     }
 
-    if(cursors.right.isDown) {
-            if(cursors.up.isDown) {
-                player.setVelocityX(player.speed);
+    if(!player_bounced) {
+        if(cursors.right.isDown) {
+                if(cursors.up.isDown) {
+                    player.setVelocityX(player.speed);
+                    player.setVelocityY(-player.speed);
+                    if(!lock_position) {
+                        player.anims.play('up-right')
+                    }
+                } else if(cursors.down.isDown) {
+                    player.setVelocityX(player.speed);
+                    player.setVelocityY(player.speed);
+                    if(!lock_position) {
+                        player.anims.play('down-right')
+                    }
+                } else {
+                    player.setVelocityX(player.speed);
+                    player.setVelocityY(0);
+                    if(!lock_position) {
+                        player.anims.play('right');
+                    }
+                }
+            } else if(cursors.left.isDown) {
+                if(cursors.up.isDown) {
+                    player.setVelocityX(-player.speed);
+                    player.setVelocityY(-player.speed);
+                    if(!lock_position) {
+                        player.anims.play('up-left')
+                    }
+                } else if(cursors.down.isDown) {
+                    player.setVelocityX(-player.speed);
+                    player.setVelocityY(player.speed);
+                    if(!lock_position) {
+                        player.anims.play('down-left');
+                    }
+                } else {
+                    player.setVelocityX(-player.speed);
+                    player.setVelocityY(0);
+                    if(!lock_position) {
+                        player.anims.play('left');
+                    }
+                }
+            } else if(cursors.up.isDown) {
                 player.setVelocityY(-player.speed);
+                player.setVelocityX(0);
                 if(!lock_position) {
-                    player.anims.play('up-right')
+                    player.anims.play('up');
                 }
             } else if(cursors.down.isDown) {
-                player.setVelocityX(player.speed);
                 player.setVelocityY(player.speed);
+                player.setVelocityX(0);
                 if(!lock_position) {
-                    player.anims.play('down-right')
+                    player.anims.play('down');
                 }
             } else {
-                player.setVelocityX(player.speed);
+                player.setVelocityX(0);
                 player.setVelocityY(0);
-                if(!lock_position) {
-                    player.anims.play('right');
-                }
             }
-        } else if(cursors.left.isDown) {
-            if(cursors.up.isDown) {
-                player.setVelocityX(-player.speed);
-                player.setVelocityY(-player.speed);
-                if(!lock_position) {
-                    player.anims.play('up-left')
-                }
-            } else if(cursors.down.isDown) {
-                player.setVelocityX(-player.speed);
-                player.setVelocityY(player.speed);
-                if(!lock_position) {
-                    player.anims.play('down-left');
-                }
-            } else {
-                player.setVelocityX(-player.speed);
-                player.setVelocityY(0);
-                if(!lock_position) {
-                    player.anims.play('left');
-                }
-            }
-        } else if(cursors.up.isDown) {
-            player.setVelocityY(-player.speed);
-            player.setVelocityX(0);
-            if(!lock_position) {
-                player.anims.play('up');
-            }
-        } else if(cursors.down.isDown) {
-            player.setVelocityY(player.speed);
-            player.setVelocityX(0);
-            if(!lock_position) {
-                player.anims.play('down');
-            }
-        } else {
-            player.setVelocityX(0);
-            player.setVelocityY(0);
         }
 
     if(cursors.space.isDown) {
@@ -318,6 +332,9 @@ function create_enemies(game) {
     enemies = game.physics.add.group();
     game.physics.add.overlap(enemies, player_projectiles, function(enemy, projectile) {
         enemy.disableBody(true, true);
+        //enemy.p.children.iterate(function(child) {
+            //child.disableBody(true, true);
+       // })
         projectile.disableBody(true, true);
     }, null, game);
 
@@ -370,13 +387,13 @@ function update_enemies(game) {
         var enemy = enemies.create(ex, ey, 'aq');
         setEnemyPath(enemy, ev);
 
-        var p = particulates.create(enemy.x, enemy.y, 'particulate');
-        p.setVelocityX(evx*2);
-        p.setVelocityY(evy*2);
+        enemy.p = particulates.create(enemy.x, enemy.y, 'particulate');
+        enemy.p.setVelocityX(evx*2);
+        enemy.p.setVelocityY(evy*2);
     }
 
     var timeFire = game.time.delayedCall(5000, function() {
-            enemyContinuousFire(enemy, p)
+            if(enemy) enemyContinuousFire(enemy, enemy.p)
     });
 
 }
@@ -418,6 +435,43 @@ function enemyContinuousFire(enemy, particulate) {
     }
 }
 
+function loadLeftConfluence(game) {
+    game.load.image('wall_01', 'assets/wall_01.png');
+    game.load.image('wall_02', 'assets/wall_02.png');
+}
+
+function createLeftConfluence(game) {
+    walls = game.physics.add.staticGroup();
+
+    walls.create(tile(-5), tile(3), 'wall_01');
+    walls.create(tile(-10), tile(3), 'wall_01');
+    walls.create(tile(-15), tile(3), 'wall_01');
+    walls.create(tile(-20), tile(3), 'wall_01');
+
+    walls.create(tile(-5), tile(13), 'wall_01');
+    walls.create(tile(-10), tile(13), 'wall_01');
+    walls.create(tile(-15), tile(13), 'wall_01');
+    walls.create(tile(-20), tile(13), 'wall_01');
+
+    walls.create(tile(-15), tile(8), 'wall_02');
+
+
+
+    game.physics.add.collider(player, walls, function(p , w) {
+        player.health -= 5;
+        refreshGraphics(game);
+        player_bounced = true;
+        var timer = game.time.delayedCall(200, function() {
+            player_bounced = false;
+        });
+    });
+    player.setBounce(1);
+    
+}
+
+function tile(dist) {
+    return dist*32;
+}
 
 
 </script>
