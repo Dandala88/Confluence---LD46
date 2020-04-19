@@ -62,6 +62,7 @@ function preload() {
     load_player(this);
     load_enemies(this);
     loadWestConfluence(this)
+    loadNorthConfluence(this)
     graphics = this.add.graphics();
 }
 
@@ -72,6 +73,7 @@ function create() {
     create_player(this);
     create_enemies(this);
     createWestConfluence(this);
+    createNorthConfluence(this);
     this.cameras.main.startFollow(player);
     this.input.keyboard.on('keydown-F', function(e) {
         if(this.scale.isFullscreen) {
@@ -524,59 +526,54 @@ function createWestConfluence(game) {
     
 }
 
+function loadNorthConfluence(game) {
+    game.load.image('wall_03', 'assets/wall_03.png');
+    game.load.image('wall_04', 'assets/wall_04.png');
+}
 function createNorthConfluence(game) {
     walls_n = game.physics.add.staticGroup();
 
-    walls_n.create(tile(-5), tile(3), 'wall_01');
-    walls_n.create(tile(-10), tile(3), 'wall_01');
-    walls_n.create(tile(-15), tile(3), 'wall_01');
-    walls_n.create(tile(-20), tile(3), 'wall_01');
-    walls_n.create(tile(-25), tile(3), 'wall_01');
-    walls_n.create(tile(-30), tile(3), 'wall_01');
-    walls_n.create(tile(-33), tile(5), 'wall_02');
-    walls_n.create(tile(-35), tile(8), 'wall_01');
-    walls_n.create(tile(-40), tile(8), 'wall_01');
-    walls_n.create(tile(-45), tile(8), 'wall_01');
-    walls_n.create(tile(-50), tile(8), 'wall_01');
-    walls_n.create(tile(-55), tile(8), 'wall_01');
-    walls_n.create(tile(-60), tile(8), 'wall_01');
-    walls_n.create(tile(-65), tile(8), 'wall_01');
-    walls_n.create(tile(-70), tile(8), 'wall_01');
-    walls_n.create(tile(-73), tile(6), 'wall_02');
-    walls_n.create(tile(-75), tile(4), 'wall_01');
-    walls_n.create(tile(-80), tile(4), 'wall_01');
-    walls_n.create(tile(-83), tile(6), 'wall_02');
+    
 
-    walls_n.create(tile(-5), tile(13), 'wall_01');
-    walls_n.create(tile(-10), tile(13), 'wall_01');
-    walls_n.create(tile(-15), tile(13), 'wall_01');
-    walls_n.create(tile(-20), tile(13), 'wall_01');
-    walls_n.create(tile(-23), tile(11), 'wall_02');
-    walls_n.create(tile(-25), tile(8), 'wall_01');
-    walls_n.create(tile(-28), tile(8), 'wall_02');
-    walls_n.create(tile(-30), tile(11), 'wall_01');
-    walls_n.create(tile(-35), tile(11), 'wall_01');
-    walls_n.create(tile(-40), tile(11), 'wall_01');
-    walls_n.create(tile(-45), tile(11), 'wall_01');
-    walls_n.create(tile(-50), tile(11), 'wall_01');
-    walls_n.create(tile(-55), tile(11), 'wall_01');
-    walls_n.create(tile(-60), tile(11), 'wall_01');
-    walls_n.create(tile(-65), tile(11), 'wall_01');
-    walls_n.create(tile(-70), tile(11), 'wall_01');
-    walls_n.create(tile(-73), tile(13), 'wall_02');
-    walls_n.create(tile(-75), tile(15), 'wall_01');
-    walls_n.create(tile(-80), tile(15), 'wall_01');
-    walls_n.create(tile(-83), tile(13), 'wall_02');
-    walls_n.create(tile(-84), tile(10), 'wall_02');
+    walls_n.create(tile(1), tile(-5), 'wall_03');
+    walls_n.create(tile(6), tile(-5), 'wall_03');
+    walls_n.create(tile(11), tile(-5), 'wall_03');
+    walls_n.create(tile(18), tile(-5), 'wall_03');
 
-    walls_n.create(tile(-2), tile(1), 'wall_02');
-    walls_n.create(tile(-2), tile(-2), 'wall_02');
-
-    walls_n.create(tile(-2), tile(15), 'wall_02');
-    walls_n.create(tile(-2), tile(20), 'wall_02');
+    walls_n.create(tile(16), tile(-8), 'wall_04');
+    walls_n.create(tile(16), tile(-13), 'wall_04');
+    walls_n.create(tile(4), tile(-15), 'wall_03');
+    walls_n.create(tile(9), tile(-15), 'wall_03');
+    walls_n.create(tile(13), tile(-15), 'wall_03');
+    walls_n.create(tile(11), tile(-8), 'wall_04');
+    walls_n.create(tile(8), tile(-13), 'wall_04');
+    walls_n.create(tile(5), tile(-8), 'wall_04');
+    walls_n.create(tile(2), tile(-13), 'wall_04');
+    walls_n.create(tile(-1), tile(-8), 'wall_04');
+    walls_n.create(tile(-1), tile(-13), 'wall_04');
+    walls_n.create(tile(-1), tile(-18), 'wall_04');
+    walls_n.create(tile(1), tile(-21), 'wall_03');
+    walls_n.create(tile(6), tile(-21), 'wall_03');
+    walls_n.create(tile(11), tile(-21), 'wall_03');
+    walls_n.create(tile(16), tile(-18), 'wall_04');
+    walls_n.create(tile(16), tile(-23), 'wall_04');
+    walls_n.create(tile(16), tile(-28), 'wall_04');
+    walls_n.create(tile(16), tile(-33), 'wall_04');
+    walls_n.create(tile(13), tile(-23), 'wall_04');
+    walls_n.create(tile(13), tile(-28), 'wall_04');
+    walls_n.create(tile(13), tile(-33), 'wall_04');
+    walls_n.create(tile(13), tile(-38), 'wall_04');
+    walls_n.create(tile(20), tile(-8), 'wall_04');
+    walls_n.create(tile(20), tile(-13), 'wall_04');
+    walls_n.create(tile(20), tile(-18), 'wall_04');
+    walls_n.create(tile(20), tile(-23), 'wall_04');
+    walls_n.create(tile(20), tile(-28), 'wall_04');
+    walls_n.create(tile(20), tile(-33), 'wall_04');
+    walls_n.create(tile(20), tile(-38), 'wall_04');
+    walls_n.create(tile(18), tile(-41), 'wall_03');
+    walls_n.create(tile(15), tile(-41), 'wall_03');
 
 
-    walls_n.create(tile(-15), tile(8), 'wall_02');
 
 
 
