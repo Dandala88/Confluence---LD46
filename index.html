@@ -53,7 +53,8 @@ var walls_n;
 var walls_e;
 var walls_s;
 var debug_text
-var player_bounced
+var player_bounced;
+var ribbonText;
 
 var game = new Phaser.Game(config);
 
@@ -65,6 +66,7 @@ function preload() {
     loadNorthConfluence(this)
     loadEastConfluence(this)
     loadSouthConfluence(this)
+    loadRibbon(this);
     graphics = this.add.graphics();
 }
 
@@ -78,6 +80,7 @@ function create() {
     createNorthConfluence(this);
     createEastConfluence(this);
     createSouthConfluence(this);
+    createRibbon(this);
     this.cameras.main.startFollow(player);
     this.input.keyboard.on('keydown-F', function(e) {
         if(this.scale.isFullscreen) {
@@ -92,8 +95,11 @@ function create() {
     game_over_text = this.add.text(canvascenterX, canvascenterY, '', {fontSize: '64px', fill: 'red'});
     game_over_text.setScrollFactor(0);
 
-    debug_text = this.add.text(100, 100, '', {fontSize: '64px', fill: 'white'});
-    debug_text.setScrollFactor(0);
+    //debug_text = this.add.text(100, 100, '', {fontSize: '64px', fill: 'white'});
+    //debug_text.setScrollFactor(0);
+
+    ribbonText = this.add.text(260, 16, '0/4', {fontSize: '32px', fill: 'white'});
+    ribbonText.setScrollFactor(0);
 
     this.children.bringToTop(graphics);
     this.children.bringToTop(player.health_display);
@@ -103,8 +109,8 @@ function create() {
 function update() {
     update_cpu(this);
     update_player(this);
-    debug_text.setText(Phaser.Math.FloorTo(player.x/32) + ',' + Phaser.Math.FloorTo(player.y/32))
-    if(Phaser.Math.Between(0, 100) % 99 == 0) {
+    //debug_text.setText(Phaser.Math.FloorTo(player.x) + ',' + Phaser.Math.FloorTo(player.y))
+    if(player.ribbonPossesion < 4 && Phaser.Math.Between(0, 100) % 99 == 0) {
         update_enemies(this);
     }
 
@@ -118,6 +124,15 @@ function update() {
         });
         player.disableBody(true, true);
         return;
+    }
+
+    if(player.ribbonPossesion >= 4) {
+        enemies.children.iterate(function(child) {
+            child.disableBody(true, true);
+        });
+        particulates.children.iterate(function(child) {
+            child.disableBody(true, true);
+        });
     }
 }
 
@@ -139,6 +154,7 @@ function create_player(game) {
     player.speed = 200;
     player.firingSpeed = 500;
     player.health = 100;
+    player.ribbonPossesion = 0;
     health_bar = game.add.rectangle(5, 4, ((player.health_display.width - 10) / 100) * player.health, player.health_display.height-5);
     graphics.setScrollFactor(0, 0);
     graphics.fillStyle(0xee6b3b);
@@ -814,6 +830,48 @@ function tile(dist) {
     return dist*32;
 }
 
+function loadRibbon(game) {
+    game.load.image('ribbon', 'assets/ribbon.png');
+}
+
+var ribbons;
+var ribbon_1;
+var ribbon_2;
+var ribbon_3;
+var ribbon_4;
+
+function createRibbon(game) {
+    ribbons = game.physics.add.staticGroup();
+
+    ribbon_1 = ribbons.create(-2500, 300, 'ribbon');
+    ribbon_2 = ribbons.create(575, -240, 'ribbon');
+    ribbon_3 = ribbons.create(4645, 220, 'ribbon');
+    ribbon_4 = ribbons.create(15, 2300, 'ribbon');
+
+    game.physics.add.overlap(player, ribbon_1, function(p, r) {
+        player.ribbonPossesion++;
+        ribbonText.setText(player.ribbonPossesion+"/4");
+        r.disableBody(true, true);
+    }, null, this);
+
+    game.physics.add.overlap(player, ribbon_2, function(p, r) {
+        player.ribbonPossesion++;
+        ribbonText.setText(player.ribbonPossesion+"/4");
+        r.disableBody(true, true);
+    }, null, this);
+
+    game.physics.add.overlap(player, ribbon_3, function(p, r) {
+        player.ribbonPossesion++;
+        ribbonText.setText(player.ribbonPossesion+"/4");
+        r.disableBody(true, true);
+    }, null, this);
+
+    game.physics.add.overlap(player, ribbon_4, function(p, r) {
+        player.ribbonPossesion++;
+        ribbonText.setText(player.ribbonPossesion+"/4");
+        r.disableBody(true, true);
+    }, null, this);
+}
 
 </script>
 </body>
