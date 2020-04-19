@@ -199,7 +199,6 @@ function create_player(game) {
     //     }, null, this);
     // }
     
-
     game.anims.create({
        key:'left',
        frames: [{key: 'psu', frame: 3}],
@@ -247,8 +246,57 @@ function create_player(game) {
        frames: [{key: 'psu', frame: 2}],
        repeat: -1
     });
+
+    game.anims.create({
+       key:'ileft',
+       frames: [{key: 'psu', frame: 7}],
+       repeat: -1
+    });
+
+    game.anims.create({
+       key:'iright',
+       frames: [{key: 'psu', frame: 6}],
+       repeat: -1
+    });
+
+    game.anims.create({
+       key:'iup',
+       frames: [{key: 'psu', frame: 4}],
+       repeat: -1
+    });
+
+    game.anims.create({
+       key:'idown',
+       frames: [{key: 'psu', frame: 5}],
+       repeat: -1
+    });
+
+    game.anims.create({
+       key:'iup-left',
+       frames: [{key: 'psu', frame: 7}],
+       repeat: -1
+    });
+
+    game.anims.create({
+       key:'iup-right',
+       frames: [{key: 'psu', frame: 6}],
+       repeat: -1
+    });
+
+    game.anims.create({
+       key:'idown-left',
+       frames: [{key: 'psu', frame: 7}],
+       repeat: -1
+    });
+
+    game.anims.create({
+       key:'idown-right',
+       frames: [{key: 'psu', frame: 6}],
+       repeat: -1
+    });
 }
 
+var istr="";
 function update_player() {
     
 
@@ -258,25 +306,39 @@ function update_player() {
         lock_position = false;
     }
 
+    if(invincible) {
+        if(istr=="") {
+            player.anims.play(istr+player.anims.getCurrentKey());
+        }
+        istr = "i";
+    }
+
+    if(!invincible) {
+        if(istr=="i") {
+            player.anims.play(player.anims.getCurrentKey().substring(1));
+        }
+        istr = "";
+    }
+
     if(!player_bounced) {
         if(cursors.right.isDown) {
                 if(cursors.up.isDown) {
                     player.setVelocityX(player.speed);
                     player.setVelocityY(-player.speed);
                     if(!lock_position) {
-                        player.anims.play('up-right')
+                        player.anims.play(istr + 'up-right')
                     }
                 } else if(cursors.down.isDown) {
                     player.setVelocityX(player.speed);
                     player.setVelocityY(player.speed);
                     if(!lock_position) {
-                        player.anims.play('down-right')
+                        player.anims.play(istr + 'down-right')
                     }
                 } else {
                     player.setVelocityX(player.speed);
                     player.setVelocityY(0);
                     if(!lock_position) {
-                        player.anims.play('right');
+                        player.anims.play(istr + 'right');
                     }
                 }
             } else if(cursors.left.isDown) {
@@ -284,32 +346,32 @@ function update_player() {
                     player.setVelocityX(-player.speed);
                     player.setVelocityY(-player.speed);
                     if(!lock_position) {
-                        player.anims.play('up-left')
+                        player.anims.play(istr + 'up-left')
                     }
                 } else if(cursors.down.isDown) {
                     player.setVelocityX(-player.speed);
                     player.setVelocityY(player.speed);
                     if(!lock_position) {
-                        player.anims.play('down-left');
+                        player.anims.play(istr + 'down-left');
                     }
                 } else {
                     player.setVelocityX(-player.speed);
                     player.setVelocityY(0);
                     if(!lock_position) {
-                        player.anims.play('left');
+                        player.anims.play(istr + 'left');
                     }
                 }
             } else if(cursors.up.isDown) {
                 player.setVelocityY(-player.speed);
                 player.setVelocityX(0);
                 if(!lock_position) {
-                    player.anims.play('up');
+                    player.anims.play(istr + 'up');
                 }
             } else if(cursors.down.isDown) {
                 player.setVelocityY(player.speed);
                 player.setVelocityX(0);
                 if(!lock_position) {
-                    player.anims.play('down');
+                    player.anims.play(istr + 'down');
                 }
             } else {
                 player.setVelocityX(0);
