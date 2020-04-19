@@ -104,6 +104,9 @@ function update() {
         enemies.children.iterate(function(child) {
             child.disableBody(true, true);
         });
+        particulates.children.iterate(function(child) {
+            child.disableBody(true, true);
+        });
         player.disableBody(true, true);
         return;
     }
@@ -332,9 +335,6 @@ function create_enemies(game) {
     enemies = game.physics.add.group();
     game.physics.add.overlap(enemies, player_projectiles, function(enemy, projectile) {
         enemy.disableBody(true, true);
-        //enemy.p.children.iterate(function(child) {
-            //child.disableBody(true, true);
-       // })
         projectile.disableBody(true, true);
     }, null, game);
 
@@ -342,14 +342,17 @@ function create_enemies(game) {
 
     particulates = game.physics.add.group();
 
-    game.physics.add.overlap(cpu, particulates, function(hit, particulates) {
-        particulates.disableBody(true, true);
+    game.physics.add.overlap(cpu, particulates, function(hit, part) {
+        enemyFire(part.parent);
+        part.disableBody(true, true);
         cpu.health = cpu.health - 10;
         refreshGraphics(game);
     }, null, this);
 
-    game.physics.add.overlap(player, particulates, function(hit, particulates) {
-        particulates.disableBody(true, true);
+    game.physics.add.overlap(player, particulates, function(hit, part) {
+        enemyFire(part.parent);
+        part.disableBody(true, true);
+
         player.health = player.health - 10;
         refreshGraphics(game);
     }, null, this);
@@ -386,16 +389,16 @@ function update_enemies(game) {
 
         var enemy = enemies.create(ex, ey, 'aq');
         setEnemyPath(enemy, ev);
-
-        enemy.p = particulates.create(enemy.x, enemy.y, 'particulate');
-        enemy.p.setVelocityX(evx*2);
-        enemy.p.setVelocityY(evy*2);
+        enemyFire(enemy)
     }
 
-    var timeFire = game.time.delayedCall(5000, function() {
-            if(enemy) enemyContinuousFire(enemy, enemy.p)
-    });
+}
 
+function enemyFire(enemy) {
+    var p = particulates.create(enemy.x, enemy.y, 'particulate');
+    p.parent = enemy;
+    p.setVelocityX(enemy.body.velocity.x*2);
+    p.setVelocityY(enemy.body.velocity.y*2);
 }
 
 function refreshGraphics(game) {
