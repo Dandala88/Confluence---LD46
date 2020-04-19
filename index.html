@@ -70,13 +70,28 @@ function create() {
             this.scale.startFullscreen();
         }
     }, this);
+
+    var canvascenterX = this.sys.game.canvas.width * 0.5 - 180;
+    var canvascenterY = this.sys.game.canvas.height * 0.5 - 50;
+    game_over_text = this.add.text(canvascenterX, canvascenterY, '', {fontSize: '64px', fill: 'red'});
+    game_over_text.setScrollFactor(0);
 }
 
 function update() {
     update_cpu(this);
     update_player(this);
+    
     if(Phaser.Math.Between(0, 100) % 99 == 0) {
         update_enemies(this);
+    }
+
+    if(player.health <= 0 || cpu.health <= 0) {
+        game_over_text.setText('GAME OVER');
+        enemies.children.iterate(function(child) {
+            child.disableBody(true, true);
+        });
+        player.disableBody(true, true);
+        return;
     }
 }
 
@@ -158,6 +173,7 @@ function create_player(game) {
 
 function update_player() {
     
+
     if(lock_key.isDown) {
         lock_position = true;
     } else {
@@ -273,8 +289,8 @@ function load_cpu(game) {
 }
 
 function create_cpu(game) {
-    cpu = game.physics.add.staticGroup();
-    cpu.create(300, 300, 'cpu');
+    var cpus = game.physics.add.staticGroup();
+    cpu = cpus.create(300, 300, 'cpu');
     cpu.health = 10000;
     cpu.health_display = game.add.image(0, 30, 'cpu-health');
     cpu.health_display.setScrollFactor(0);
@@ -343,29 +359,35 @@ function update_enemies(game) {
     //spawn enemy within a 300 range of the player
     var ex = Phaser.Math.Between(player.x - 300, player.x + 300);
     var ey = Phaser.Math.Between(player.y - 300, player.y + 300);
-    var evx = ev;//calculated x velocity
-    var evy = ev;//calculated y velocity
 
-    var enemy = enemies.create(ex, ey, 'aq');
-
-    if(enemy.x > 300) {
-        evx = -ev;
+    if(ex > cpu.x-125 && ex < cpu.x+125
+    && ey > cpu.y-125 && ey < cpu.y+125) {
+        console.log("spawn location in bounds")
     } else {
-        evx = ev;
+        var evx = ev;//calculated x velocity
+        var evy = ev;//calculated y velocity
+
+        var enemy = enemies.create(ex, ey, 'aq');
+
+        if(enemy.x > 300) {
+            evx = -ev;
+        } else {
+            evx = ev;
+        }
+
+        if(enemy.y > 300) {
+            evy = -ev;
+        } else {
+            evy = ev;
+        }
+
+        enemy.setVelocityX(evx);
+        enemy.setVelocityY(evy);
+
+        var p = particulates.create(enemy.x, enemy.y, 'particulate');
+        p.setVelocityX(evx*2);
+        p.setVelocityY(evy*2);
     }
-
-    if(enemy.y > 300) {
-        evy = -ev;
-    } else {
-        evy = ev;
-    }
-
-    enemy.setVelocityX(evx);
-    enemy.setVelocityY(evy);
-
-    var p = particulates.create(enemy.x, enemy.y, 'particulate');
-    p.setVelocityX(evx*2);
-    p.setVelocityY(evy*2);
 
 }
 </script>
