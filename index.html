@@ -27,8 +27,12 @@ var config = {
         preload: preload,
         create: create,
         update: update
+    },
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
     }
-};
+}
 
 var player;
 var player_projectiles;
@@ -58,8 +62,14 @@ function create() {
     create_cpu(this);
     create_player(this);
     create_enemies(this);
-    this.cameras.main.setBounds(-10, -10, 8000, 8000);
     this.cameras.main.startFollow(player);
+    this.input.keyboard.on('keydown-F', function(e) {
+        if(this.scale.isFullscreen) {
+            this.scale.stopFullscreen();
+        } else {
+            this.scale.startFullscreen();
+        }
+    }, this);
 }
 
 function update() {
@@ -79,15 +89,17 @@ function load_player(game) {
 }
 
 function create_player(game) {
-    player = game.physics.add.sprite(100, 450, 'psu');
+    player = game.physics.add.sprite(100, 100, 'psu');
     player.health_display = game.add.image(0, 0, 'psu-health');
+    player.health_display.setScrollFactor(0);
     player.health_display.setOrigin(0, 0);
     //player.setCollideWorldBounds(true);
     player_projectiles = game.physics.add.group();
     player.speed = 200;
     player.firingSpeed = 500;
-    player.health = 90;
+    player.health = 100;
     health_bar = game.add.rectangle(5, 4, ((player.health_display.width - 10) / 100) * player.health, player.health_display.height-5);
+    graphics.setScrollFactor(0, 0);
     graphics.fillStyle(0xee6b3b);
     graphics.fillRectShape(health_bar);
     game.physics.add.collider(player, cpu);
@@ -265,6 +277,7 @@ function create_cpu(game) {
     cpu.create(300, 300, 'cpu');
     cpu.health = 10000;
     cpu.health_display = game.add.image(0, 30, 'cpu-health');
+    cpu.health_display.setScrollFactor(0);
     cpu.health_display.setOrigin(0, 0);
     cpu_health_bar = game.add.rectangle(5, 34, ((cpu.health_display.width - 10) / 10000) * cpu.health, cpu.health_display.height-5);
     graphics.fillStyle(0x262949);
@@ -297,9 +310,9 @@ function create_enemies(game) {
     game.physics.add.overlap(cpu, particulates, function(hit, particulates) {
         particulates.disableBody(true, true);
         cpu.health = cpu.health - 10;
-        console.log(cpu.health)
         graphics.clear();
         health_bar = game.add.rectangle(5, 4, ((player.health_display.width - 10) / 100) * player.health, player.health_display.height-5);
+        graphics.setScrollFactor(0, 0);
         graphics.fillStyle(0xee6b3b);
         graphics.fillRectShape(health_bar);
 
@@ -314,6 +327,7 @@ function create_enemies(game) {
         
         graphics.clear();
         health_bar = game.add.rectangle(5, 4, ((player.health_display.width - 10) / 100) * player.health, player.health_display.height-5);
+        graphics.setScrollFactor(0, 0);
         graphics.fillStyle(0xee6b3b);
         graphics.fillRectShape(health_bar);
 
