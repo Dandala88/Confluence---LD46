@@ -56,6 +56,7 @@ var walls_s;
 var debug_text
 var player_bounced;
 var ribbonText;
+var ending_initiated = false;
 
 var game = new Phaser.Game(config);
 
@@ -127,6 +128,19 @@ function update() {
         return;
     }
 
+    if(cpu.health <= 0 && player.ribbonPossesion >= 4) {
+        game_over_text.setColor('green');
+        game_over_text.setText('GAME WIN');
+        enemies.children.iterate(function(child) {
+            child.disableBody(true, true);
+        });
+        particulates.children.iterate(function(child) {
+            child.disableBody(true, true);
+        });
+        player.disableBody(true, true);
+        return;
+    }
+
     if(player.ribbonPossesion >= 4) {
         enemies.children.iterate(function(child) {
             child.disableBody(true, true);
@@ -134,6 +148,11 @@ function update() {
         particulates.children.iterate(function(child) {
             child.disableBody(true, true);
         });
+
+        if(ending_initiated) {
+            cpu_fires(this);
+            ending_initiated = false;
+        }
     }
 }
 
@@ -155,28 +174,30 @@ function create_player(game) {
     player.speed = 200;
     player.firingSpeed = 500;
     player.health = 100;
-    player.ribbonPossesion = 4;
+    player.ribbonPossesion = 0;
     health_bar = game.add.rectangle(5, 4, ((player.health_display.width - 10) / 100) * player.health, player.health_display.height-5);
     graphics.setScrollFactor(0, 0);
     graphics.fillStyle(0xee6b3b);
     graphics.fillRectShape(health_bar);
-    game.physics.add.collider(player, cpu);
-    game.physics.add.overlap(cpu, player_projectiles, function(c, p) {
-        if(player.ribbonPossesion >= 4) {
-            c.health-=5;
-            refreshGraphics(game);
-        }
-        p.disableBody(true, true);
-    }, null, this);
+    if(player.ribbonPossesion < 4) game.physics.add.collider(player, cpu);
 
-    if(player.ribbonPossesion >= 4) {
-        cpu_fires(game);
-        game.physics.add.overlap(player, cpu_projectiles, function(p, cp) {
-            player.health-=10;
-            refreshGraphics(game);
-            cp.disableBody(true, true);
-        }, null, this);
-    }
+    //for debuggin boss battle
+    // game.physics.add.overlap(cpu, player_projectiles, function(c, p) {
+    //     if(player.ribbonPossesion >= 4) {
+    //         c.health-=1000;
+    //         refreshGraphics(game);
+    //     }
+    //     p.disableBody(true, true);
+    // }, null, this);
+
+    // if(player.ribbonPossesion >= 4) {
+    //     cpu_fires(game);
+    //     game.physics.add.overlap(player, cpu_projectiles, function(p, cp) {
+    //         player.health-=10;
+    //         refreshGraphics(game);
+    //         cp.disableBody(true, true);
+    //     }, null, this);
+    // }
     
 
     game.anims.create({
@@ -382,6 +403,29 @@ function cpu_fires(game) {
         },
         loop: true
     });
+    game.physics.add.overlap(player, cpu_projectiles, function(p, cp) {
+            player.health-=10;
+            refreshGraphics(game);
+            cp.disableBody(true, true);
+    }, null, this);
+
+    game.physics.add.collider(player, cpu, function(p, c) {
+        player.health-=20;
+        refreshGraphics(game);
+        player_bounced = true;
+        var timer = game.time.delayedCall(200, function() {
+            player_bounced = false;
+        });
+    }, null, this);
+    player.setBounce(1);
+
+    game.physics.add.overlap(cpu, player_projectiles, function(c, p) {
+        if(player.ribbonPossesion >= 4) {
+            c.health-=100;
+            refreshGraphics(game);
+        }
+        p.disableBody(true, true);
+    }, null, this);
 }
 function update_cpu(game) {
 
@@ -409,7 +453,7 @@ function create_enemies(game) {
     game.physics.add.overlap(cpu, particulates, function(hit, part) {
         enemyFire(part.parent);
         part.disableBody(true, true);
-        cpu.health = cpu.health - 10;
+        cpu.health = cpu.health - 100;
         refreshGraphics(game);
     }, null, this);
 
@@ -890,24 +934,28 @@ function createRibbon(game) {
     game.physics.add.overlap(player, ribbon_1, function(p, r) {
         player.ribbonPossesion++;
         ribbonText.setText(player.ribbonPossesion+"/4");
+        if(player.ribbonPossesion >= 4) ending_initiated = true;
         r.disableBody(true, true);
     }, null, this);
 
     game.physics.add.overlap(player, ribbon_2, function(p, r) {
         player.ribbonPossesion++;
         ribbonText.setText(player.ribbonPossesion+"/4");
+        if(player.ribbonPossesion >= 4) ending_initiated = true;
         r.disableBody(true, true);
     }, null, this);
 
     game.physics.add.overlap(player, ribbon_3, function(p, r) {
         player.ribbonPossesion++;
         ribbonText.setText(player.ribbonPossesion+"/4");
+        if(player.ribbonPossesion >= 4) ending_initiated = true;
         r.disableBody(true, true);
     }, null, this);
 
     game.physics.add.overlap(player, ribbon_4, function(p, r) {
         player.ribbonPossesion++;
         ribbonText.setText(player.ribbonPossesion+"/4");
+        if(player.ribbonPossesion >= 4) ending_initiated = true;
         r.disableBody(true, true);
     }, null, this);
 }
