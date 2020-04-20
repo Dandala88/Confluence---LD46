@@ -622,7 +622,7 @@ function create_enemies(game) {
         if(!invincible) {
             iframe_sound.play();
             player.anims.play("i"+player.anims.getCurrentKey());
-            player.health = player.health - 5;
+            player.health = player.health - 3;
             invincible = true
         }
         var time = game.time.delayedCall(5000, function() {
@@ -640,7 +640,7 @@ function create_enemies(game) {
         if(!invincible) {
             iframe_sound.play();
             player.anims.play("i"+player.anims.getCurrentKey());
-            player.health = player.health - 7;
+            player.health = player.health - 5;
             invincible = true
         }
         var time = game.time.delayedCall(5000, function() {
@@ -782,7 +782,7 @@ function createWestConfluence(game) {
 
 
     game.physics.add.collider(player, walls_w, function(p , w) {
-        player.health -= 3;
+        player.health -= 1;
         bounce_sound.play();
         refreshGraphics(game);
         player_bounced = true;
@@ -846,7 +846,7 @@ function createNorthConfluence(game) {
 
 
     game.physics.add.collider(player, walls_n, function(p , w) {
-        player.health -= 3;
+        player.health -= 1;
         bounce_sound.play();
         refreshGraphics(game);
         player_bounced = true;
@@ -952,7 +952,7 @@ function createEastConfluence(game) {
 
 
     game.physics.add.collider(player, walls_e, function(p , w) {
-        player.health -= 3;
+        player.health -= 1;
         bounce_sound.play();
         refreshGraphics(game);
         player_bounced = true;
@@ -1066,7 +1066,7 @@ function createSouthConfluence(game) {
     walls_s.create(tile(20), tile(71), 'wall_08');
 
     game.physics.add.collider(player, walls_s, function(p , w) {
-        player.health -= 3;
+        player.health -= 1;
         bounce_sound.play();
         refreshGraphics(game);
         player_bounced = true;
