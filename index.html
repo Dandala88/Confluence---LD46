@@ -611,7 +611,7 @@ function create_enemies(game) {
     game.physics.add.overlap(cpu, particulates, function(hit, part) {
         enemyFire(part.parent);
         part.disableBody(true, true);
-        cpu.health = cpu.health - 100;
+        cpu.health = cpu.health - 50;
         refreshGraphics(game);
     }, null, this);
 
