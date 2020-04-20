@@ -138,7 +138,7 @@ function update() {
     }
 
     if(player.health <= 0 || (cpu.health <= 0 && player.ribbonPossesion < 4)) {
-        game_over_text.setText('GAME OVER');
+        game_over_text.setText('Failure');
         cpu.anims.play('explode', function() {
         });
         if(!explosion_has_played) {
@@ -163,7 +163,7 @@ function update() {
 
     if(cpu.health <= 0 && player.ribbonPossesion >= 4) {
         game_over_text.setColor('green');
-        game_over_text.setText('GAME WIN');
+        game_over_text.setText('Success!');
         cpu.anims.play('explode', function() {
         });
         if(!explosion_has_played) {
@@ -200,6 +200,8 @@ function update() {
             cpu_fires(this);
             music.stop();
             bossMusic.play();
+            cpu.health = 10000;
+            refreshGraphics(this)
             ending_initiated = false;
         }
     }
@@ -215,17 +217,17 @@ function load_player(game) {
 }
 
 function create_player(game) {
-    player = game.physics.add.sprite(100, 100, 'psu').setSize(16, 16);
+    player = game.physics.add.sprite(10, 250, 'psu').setSize(16, 16);
     player.health_display = game.add.image(0, 0, 'psu-health');
     player.health_display.setScrollFactor(0);
     player.health_display.setOrigin(0, 0);
     fire_sound = game.sound.add('fire', {});
     //player.setCollideWorldBounds(true);
     player_projectiles = game.physics.add.group();
-    player.speed = 200;
+    player.speed = 150;
     player.firingSpeed = 500;
     player.health = 100;
-    player.ribbonPossesion = 4;
+    player.ribbonPossesion = 0;
     health_bar = game.add.rectangle(5, 4, ((player.health_display.width - 10) / 100) * player.health, player.health_display.height-5);
     graphics.setScrollFactor(0, 0);
     graphics.fillStyle(0xee6b3b);
@@ -233,22 +235,22 @@ function create_player(game) {
     if(player.ribbonPossesion < 4) game.physics.add.collider(player, cpu);
 
     //for debuggin boss battle
-    game.physics.add.overlap(cpu, player_projectiles, function(c, p) {
-        if(player.ribbonPossesion >= 4) {
-            c.health-=1000;
-            refreshGraphics(game);
-        }
-        p.disableBody(true, true);
-    }, null, this);
+    // game.physics.add.overlap(cpu, player_projectiles, function(c, p) {
+    //     if(player.ribbonPossesion >= 4) {
+    //         c.health-=1000;
+    //         refreshGraphics(game);
+    //     }
+    //     p.disableBody(true, true);
+    // }, null, this);
 
-    if(player.ribbonPossesion >= 4) {
-        cpu_fires(game);
-        game.physics.add.overlap(player, cpu_projectiles, function(p, cp) {
-            player.health-=10;
-            refreshGraphics(game);
-            cp.disableBody(true, true);
-        }, null, this);
-    }
+    // if(player.ribbonPossesion >= 4) {
+    //     cpu_fires(game);
+    //     game.physics.add.overlap(player, cpu_projectiles, function(p, cp) {
+    //         player.health-=10;
+    //         refreshGraphics(game);
+    //         cp.disableBody(true, true);
+    //     }, null, this);
+    // }
     
     game.anims.create({
        key:'left',
@@ -471,6 +473,15 @@ function update_player() {
     } else {
         firing = false;
     }
+
+    player_projectiles.children.iterate(function(child) {
+        if(child.x > player.x+300
+        || child.x < player.x-300
+        || child.y > player.y+300
+        || child.y < player.y-300) {
+            child.disableBody(true, true);
+        }
+    });
 }
 
 
@@ -519,8 +530,9 @@ function cpu_fires(game) {
         callback: function () {
 
             var p = []
-            for(var i=0;i<20;i++) {
+            for(var i=0;i<40;i++) {
                 p[i] = cpu_projectiles.create(cpu.x, cpu.y, 'byte');
+                p[i].setSize(16, 16);
                 p[i].setVelocityX(Math.sin(bytedeltaX+(i*3))*-50);
                 p[i].setVelocityY(Math.sin(bytedeltaY+(i*3))*-50);
             }
@@ -534,6 +546,7 @@ function cpu_fires(game) {
     game.physics.add.overlap(player, cpu_projectiles, function(p, cp) {
             if(!invincible) {
                 iframe_sound.play();
+                player.anims.play("i"+player.anims.getCurrentKey());
                 player.health = player.health - 10;
                 invincible = true
             }
@@ -557,7 +570,7 @@ function cpu_fires(game) {
 
     game.physics.add.overlap(cpu, player_projectiles, function(c, p) {
         if(player.ribbonPossesion >= 4) {
-            c.health-=100;
+            c.health-=50;
             refreshGraphics(game);
         }
         p.disableBody(true, true);
@@ -579,7 +592,7 @@ function load_enemies(game) {
 var explode_sound;
 function create_enemies(game) {
 
-    enemies = game.physics.add.group();
+    enemies = game.physics.add.group({maxSize: 10000});
     explode_sound = game.sound.add('explode_e', {
         loop: false
     })
@@ -593,7 +606,7 @@ function create_enemies(game) {
 
     particulates = game.physics.add.group();
 
-    iframe_sound = game.sound.add('iframes', {});
+    iframe_sound = game.sound.add('iframes', {volume: 0.5});
 
     game.physics.add.overlap(cpu, particulates, function(hit, part) {
         enemyFire(part.parent);
@@ -608,7 +621,8 @@ function create_enemies(game) {
 
         if(!invincible) {
             iframe_sound.play();
-            player.health = player.health - 10;
+            player.anims.play("i"+player.anims.getCurrentKey());
+            player.health = player.health - 5;
             invincible = true
         }
         var time = game.time.delayedCall(5000, function() {
@@ -625,7 +639,8 @@ function create_enemies(game) {
         });
         if(!invincible) {
             iframe_sound.play();
-            player.health = player.health - 15;
+            player.anims.play("i"+player.anims.getCurrentKey());
+            player.health = player.health - 7;
             invincible = true
         }
         var time = game.time.delayedCall(5000, function() {
@@ -650,6 +665,7 @@ function update_enemies(game) {
         var evy = ev;//calculated y velocity
 
         var enemy = enemies.create(ex, ey, 'aq');
+        enemy.setSize(16, 16);
         setEnemyPath(enemy, ev);
         enemyFire(enemy)
     }
@@ -659,6 +675,7 @@ function update_enemies(game) {
 function enemyFire(enemy) {
     if(enemy.body.velocity.x != 0 && enemy.body.velocity.y != 0) {
         var p = particulates.create(enemy.x, enemy.y, 'particulate');
+        p.setSize(4,4);
         p.parent = enemy;
         p.setVelocityX(enemy.body.velocity.x*2);
         p.setVelocityY(enemy.body.velocity.y*2);
@@ -765,7 +782,7 @@ function createWestConfluence(game) {
 
 
     game.physics.add.collider(player, walls_w, function(p , w) {
-        player.health -= 5;
+        player.health -= 3;
         bounce_sound.play();
         refreshGraphics(game);
         player_bounced = true;
@@ -829,7 +846,7 @@ function createNorthConfluence(game) {
 
 
     game.physics.add.collider(player, walls_n, function(p , w) {
-        player.health -= 5;
+        player.health -= 3;
         bounce_sound.play();
         refreshGraphics(game);
         player_bounced = true;
@@ -935,7 +952,7 @@ function createEastConfluence(game) {
 
 
     game.physics.add.collider(player, walls_e, function(p , w) {
-        player.health -= 5;
+        player.health -= 3;
         bounce_sound.play();
         refreshGraphics(game);
         player_bounced = true;
@@ -1049,7 +1066,7 @@ function createSouthConfluence(game) {
     walls_s.create(tile(20), tile(71), 'wall_08');
 
     game.physics.add.collider(player, walls_s, function(p , w) {
-        player.health -= 5;
+        player.health -= 3;
         bounce_sound.play();
         refreshGraphics(game);
         player_bounced = true;
@@ -1078,13 +1095,19 @@ function createRibbon(game) {
     ribbons = game.physics.add.staticGroup();
 
     ribbon_1 = ribbons.create(-2500, 300, 'ribbon');
+    ribbon_1.setSize(16, 16);
     ribbon_2 = ribbons.create(575, -240, 'ribbon');
+    ribbon_2.setSize(16, 16);
     ribbon_3 = ribbons.create(4645, 220, 'ribbon');
+    ribbon_3.setSize(16, 16);
     ribbon_4 = ribbons.create(15, 2300, 'ribbon');
+    ribbon_4.setSize(16, 16);
 
     game.physics.add.overlap(player, ribbon_1, function(p, r) {
         player.ribbonPossesion++;
         ribbonText.setText(player.ribbonPossesion+"/4");
+        if(cpu.health< 8999) cpu.health +=1000;
+        refreshGraphics(game);
         if(player.ribbonPossesion >= 4) ending_initiated = true;
         r.disableBody(true, true);
     }, null, this);
@@ -1092,6 +1115,8 @@ function createRibbon(game) {
     game.physics.add.overlap(player, ribbon_2, function(p, r) {
         player.ribbonPossesion++;
         ribbonText.setText(player.ribbonPossesion+"/4");
+        if(cpu.health< 8999) cpu.health +=1000;
+        refreshGraphics(game);
         if(player.ribbonPossesion >= 4) ending_initiated = true;
         r.disableBody(true, true);
     }, null, this);
@@ -1099,6 +1124,8 @@ function createRibbon(game) {
     game.physics.add.overlap(player, ribbon_3, function(p, r) {
         player.ribbonPossesion++;
         ribbonText.setText(player.ribbonPossesion+"/4");
+        if(cpu.health< 8999) cpu.health +=1000;
+        refreshGraphics(game);
         if(player.ribbonPossesion >= 4) ending_initiated = true;
         r.disableBody(true, true);
     }, null, this);
@@ -1106,6 +1133,8 @@ function createRibbon(game) {
     game.physics.add.overlap(player, ribbon_4, function(p, r) {
         player.ribbonPossesion++;
         ribbonText.setText(player.ribbonPossesion+"/4");
+        if(cpu.health< 8999) cpu.health +=1000;
+        refreshGraphics(game);
         if(player.ribbonPossesion >= 4) ending_initiated = true;
         r.disableBody(true, true);
     }, null, this);
