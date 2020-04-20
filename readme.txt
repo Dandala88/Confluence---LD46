@@ -6,4 +6,6 @@ Arrow Keys = Move
 
 Space Key = Fire
 
+F Key = Toggle Fullscreen
+
 When hit by an enemy or projectile you will automatically turn on a shield for a few seconds. You will be unable to fire until the shield is down. That’s it!
